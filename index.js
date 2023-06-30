@@ -1,8 +1,13 @@
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
-const Discord = require('discord.js');
-const client = new Discord.Client();
+const { Client, GatewayIntentBits } = require('discord.js')
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages
+    ]
+})
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -13,6 +18,13 @@ const twitchStreamer = process.env.STREAMER_NAME;
 const discordChannelID = process.env.DISCORD_CHANNEL_ID;
 let twitchToken;
 let isLive = false;
+
+client.on('ready', () => {
+    console.log(`Logged in as ${client.user.tag}!`);
+});
+
+// Log In our bot
+client.login(process.env.DISCORD_BOT_TOKEN);
 
 // Fetch the OAuth token from Twitch
 axios.post(`https://id.twitch.tv/oauth2/token?client_id=${twitchClientID}&client_secret=${twitchSecret}&grant_type=client_credentials`)
@@ -73,9 +85,6 @@ setInterval(() => {
         }
     });
 }, 60000);
-
-// Start the Discord bot
-client.login(process.env.DISCORD_BOT_TOKEN);
 
 // Start the web server
 app.listen(port, () => {
